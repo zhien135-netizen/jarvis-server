@@ -25,21 +25,33 @@ app.post("/ask", async (req, res) => {
 
     // 1️⃣ Get response text from language model
     const aiResp = await fetch(
-      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${HF_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ inputs: userMessage }),
-      }
-    );
+  "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.2",
+  {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${HF_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      inputs: userMessage,
+    }),
+  }
+);
 
-    const aiData = await aiResp.json();
-    if (!aiResp.ok) return res.status(500).json({ error: aiData });
+const aiData = await aiResp.json();
 
-    const textReply = aiData[0]?.generated_text || "I have no reply.";
+if (!aiResp.ok) {
+  console.error("HF ERROR:", aiData);
+  return res.status(500).json({ error: aiData });
+}
+
+let textReply = "I have no reply.";
+
+if (Array.isArray(aiData)) {
+  textReply = aiData[0]?.generated_text || textReply;
+} else if (aiData.generated_text) {
+  textReply = aiData.generated_text;
+}
 
     // 2️⃣ Generate audio with ElevenLabs
     const voiceId = "TxGEqnHWrfWFTfGW9XjX"; // default voice
