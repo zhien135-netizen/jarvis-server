@@ -51,29 +51,9 @@ if (!aiResp.ok) {
 const textReply =
   aiData.choices?.[0]?.message?.content || "No reply.";
 
-    // 2️⃣ Generate audio with ElevenLabs
-    const voiceId = "TxGEqnHWrfWFTfGW9XjX"; // default voice
-    const voiceResp = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
-      {
-        method: "POST",
-        headers: {
-          "Accept": "audio/mpeg",
-          "Content-Type": "application/json",
-          "xi-api-key": ELEVEN_KEY,
-        },
-        body: JSON.stringify({ text: textReply }),
-      }
-    );
-
-    const audioArrayBuffer = await voiceResp.arrayBuffer();
-    const base64Audio = Buffer.from(audioArrayBuffer).toString("base64");
-
-    // Return JSON with text + base64 audio
-    res.json({
-      text: textReply,
-      audio: `data:audio/mpeg;base64,${base64Audio}`,
-    });
+res.json({
+  text: textReply
+});
 
   } catch (err) {
     console.error("server error:", err);
