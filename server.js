@@ -1,6 +1,6 @@
-const express = require("express");
-const cors = require("cors");
-const fetch = require("node-fetch");
+import express from "express";
+import cors from "cors";
+import fetch from "node-fetch";
 
 const app = express();
 app.use(cors());
@@ -9,17 +9,15 @@ app.use(express.json());
 const PORT = process.env.PORT || 10000;
 const API_KEY = process.env.API_KEY;
 
-// Root check
 app.get("/", (req, res) => {
   res.send("JARVIS backend is running.");
 });
 
-// AI endpoint
 app.post("/ask", async (req, res) => {
   try {
 
     if (!API_KEY) {
-      console.error("API_KEY is missing!");
+      console.error("API_KEY missing");
       return res.status(500).json({ error: "API key missing" });
     }
 
@@ -38,14 +36,8 @@ app.post("/ask", async (req, res) => {
       body: JSON.stringify({
         model: "deepseek-chat",
         messages: [
-          {
-            role: "system",
-            content: "You are JARVIS, a sarcastic but intelligent AI assistant."
-          },
-          {
-            role: "user",
-            content: userMessage
-          }
+          { role: "system", content: "You are JARVIS, a sarcastic but intelligent AI assistant." },
+          { role: "user", content: userMessage }
         ],
         temperature: 0.7
       })
@@ -58,7 +50,7 @@ app.post("/ask", async (req, res) => {
       return res.status(500).json({ error: data });
     }
 
-    const reply = data.choices[0].message.content;
+    const reply = data.choices?.[0]?.message?.content || "No response from AI.";
 
     res.json({ reply });
 
