@@ -7,55 +7,67 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT || 10000;
-const API_KEY = process.env.OPENAI_API_KEY;
+const HF_API_KEY = process.env.HF_API_KEY;
+const ELEVEN_KEY = process.env.ELEVEN_KEY;
 
+// Health check
 app.get("/", (req, res) => {
-  // simple check to see if the API key is loaded
-  res.send(`JARVIS backend running. API_KEY exists: ${Boolean(API_KEY)}`);
+  res.send(`API keys loaded: HF=${Boolean(HF_API_KEY)}, ELEVEN=${Boolean(ELEVEN_KEY)}`);
 });
 
+// Chat endpoint
 app.post("/ask", async (req, res) => {
   try {
+    if (!HF_API_KEY || !ELEVEN_KEY)
+      return res.status(500).json({ error: "Missing API keys" });
 
-    if (!API_KEY) {
-      console.error("API_KEY missing!");
-      return res.status(500).json({ error: "API key missing" });
-    }
+    const userMessage = req.body.message || "";
 
-    const userMessage = req.body.message;
-    if (!userMessage) {
-      return res.status(400).json({ error: "No message provided" });
-    }
+    // 1️⃣ Get response text from language model
+    const aiResp = await fetch(
+      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${HF_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ inputs: userMessage }),
+      }
+    );
 
-    const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: [
-          { role: "system", content: "You are JARVIS, an intelligent AI assistant." },
-          { role: "user", content: userMessage }
-        ],
-        temperature: 0.7
-      })
+    const aiData = await aiResp.json();
+    if (!aiResp.ok) return res.status(500).json({ error: aiData });
+
+    const textReply = aiData[0]?.generated_text || "I have no reply.";
+
+    // 2️⃣ Generate audio with ElevenLabs
+    const voiceId = "TxGEqnHWrfWFTfGW9XjX"; // default voice
+    const voiceResp = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+      {
+        method: "POST",
+        headers: {
+          "Accept": "audio/mpeg",
+          "Content-Type": "application/json",
+          "xi-api-key": ELEVEN_KEY,
+        },
+        body: JSON.stringify({ text: textReply }),
+      }
+    );
+
+    const audioArrayBuffer = await voiceResp.arrayBuffer();
+    const base64Audio = Buffer.from(audioArrayBuffer).toString("base64");
+
+    // Return JSON with text + base64 audio
+    res.json({
+      text: textReply,
+      audio: `data:audio/mpeg;base64,${base64Audio}`,
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error("DeepSeek API error:", data);
-      return res.status(500).json({ error: data });
-    }
-
-    const reply = data.choices?.[0]?.message?.content || "No response from AI.";
-    res.json({ reply });
-
-  } catch (error) {
-    console.error("Server error:", error);
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    console.error("server error:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
