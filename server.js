@@ -7,22 +7,22 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT || 10000;
-const API_KEY = process.env.API_KEY;
+const API_KEY = process.env.OPENAI_API_KEY;
 
 app.get("/", (req, res) => {
-  res.send("API_KEY exists: " + (process.env.API_KEY ? "YES" : "NO"));
+  // simple check to see if the API key is loaded
+  res.send(`JARVIS backend running. API_KEY exists: ${Boolean(API_KEY)}`);
 });
 
 app.post("/ask", async (req, res) => {
   try {
 
     if (!API_KEY) {
-      console.error("API_KEY missing");
+      console.error("API_KEY missing!");
       return res.status(500).json({ error: "API key missing" });
     }
 
     const userMessage = req.body.message;
-
     if (!userMessage) {
       return res.status(400).json({ error: "No message provided" });
     }
@@ -36,7 +36,7 @@ app.post("/ask", async (req, res) => {
       body: JSON.stringify({
         model: "deepseek-chat",
         messages: [
-          { role: "system", content: "You are JARVIS, a sarcastic but intelligent AI assistant." },
+          { role: "system", content: "You are JARVIS, an intelligent AI assistant." },
           { role: "user", content: userMessage }
         ],
         temperature: 0.7
@@ -46,16 +46,15 @@ app.post("/ask", async (req, res) => {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("DeepSeek error:", data);
+      console.error("DeepSeek API error:", data);
       return res.status(500).json({ error: data });
     }
 
     const reply = data.choices?.[0]?.message?.content || "No response from AI.";
-
     res.json({ reply });
 
   } catch (error) {
-    console.error("Server crash:", error);
+    console.error("Server error:", error);
     res.status(500).json({ error: error.message });
   }
 });
