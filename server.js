@@ -33,7 +33,7 @@ app.post("/ask", async (req, res) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "mistralai/Mistral-7B-Instruct-v0.2",
+      model: "meta-llama/Meta-Llama-3-8B-Instruct",
       messages: [
         { role: "user", content: userMessage }
       ],
