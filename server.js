@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 10000;
 const API_KEY = process.env.API_KEY;
 
 app.get("/", (req, res) => {
-  res.send("JARVIS backend is running.");
+  res.send("API_KEY exists: " + (process.env.API_KEY ? "YES" : "NO"));
 });
 
 app.post("/ask", async (req, res) => {
