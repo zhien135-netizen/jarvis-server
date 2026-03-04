@@ -25,7 +25,7 @@ app.post("/ask", async (req, res) => {
 
     // 1️⃣ Get response text from language model
     const aiResp = await fetch(
-  "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.2",
+  "https://router.huggingface.co/v1/chat/completions",
   {
     method: "POST",
     headers: {
@@ -33,7 +33,10 @@ app.post("/ask", async (req, res) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      inputs: userMessage,
+      model: "mistralai/Mistral-7B-Instruct-v0.2",
+      messages: [
+        { role: "user", content: userMessage }
+      ],
     }),
   }
 );
@@ -45,13 +48,8 @@ if (!aiResp.ok) {
   return res.status(500).json({ error: aiData });
 }
 
-let textReply = "I have no reply.";
-
-if (Array.isArray(aiData)) {
-  textReply = aiData[0]?.generated_text || textReply;
-} else if (aiData.generated_text) {
-  textReply = aiData.generated_text;
-}
+const textReply =
+  aiData.choices?.[0]?.message?.content || "No reply.";
 
     // 2️⃣ Generate audio with ElevenLabs
     const voiceId = "TxGEqnHWrfWFTfGW9XjX"; // default voice
