@@ -1,66 +1,45 @@
 import express from "express";
-import cors from "cors";
 import fetch from "node-fetch";
+import cors from "cors";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 10000;
-const HF_API_KEY = process.env.HF_API_KEY;
-const ELEVEN_KEY = process.env.ELEVEN_KEY;
+const API_KEY = "YOUR_OPENAI_API_KEY";
 
-// Health check
-app.get("/", (req, res) => {
-  res.send(`API keys loaded: HF=${Boolean(HF_API_KEY)}, ELEVEN=${Boolean(ELEVEN_KEY)}`);
-});
-
-// Chat endpoint
 app.post("/ask", async (req, res) => {
+
+  const userMessage = req.body.message;
+
   try {
-    if (!HF_API_KEY || !ELEVEN_KEY)
-      return res.status(500).json({ error: "Missing API keys" });
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are JARVIS, a smart AI assistant." },
+          { role: "user", content: userMessage }
+        ]
+      })
+    });
 
-    const userMessage = req.body.message || "";
+    const data = await response.json();
 
-    // 1️⃣ Get response text from language model
-    const aiResp = await fetch(
-  "https://router.huggingface.co/v1/chat/completions",
-  {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${HF_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "meta-llama/Meta-Llama-3-8B-Instruct",
-      messages: [
-        { role: "user", content: userMessage }
-      ],
-    }),
-  }
-);
-
-const aiData = await aiResp.json();
-
-if (!aiResp.ok) {
-  console.error("HF ERROR:", aiData);
-  return res.status(500).json({ error: aiData });
-}
-
-const textReply =
-  aiData.choices?.[0]?.message?.content || "No reply.";
-
-res.json({
-  text: textReply
-});
+    res.json({
+      reply: data.choices[0].message.content
+    });
 
   } catch (err) {
-    console.error("server error:", err);
-    res.status(500).json({ error: err.message });
+    res.json({ reply: "Error contacting AI." });
   }
+
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
 });
