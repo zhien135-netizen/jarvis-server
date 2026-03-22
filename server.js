@@ -30,8 +30,7 @@ app.post("/ask", async (req, res) => {
 
     const data = await response.json();
 
-    res.json({
-      reply: const reply = data?.choices?.[0]?.message?.content || "No response";
+    const reply = data?.choices?.[0]?.message?.content || "No response";
 
 res.json({ reply });
 
