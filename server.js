@@ -41,6 +41,10 @@ res.json({ reply });
 
 });
 
+app.get("/", (req, res) => {
+  res.send("JARVIS backend is running");
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
