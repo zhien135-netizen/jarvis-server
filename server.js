@@ -31,8 +31,9 @@ app.post("/ask", async (req, res) => {
     const data = await response.json();
 
     res.json({
-      reply: data.choices[0].message.content
-    });
+      reply: const reply = data?.choices?.[0]?.message?.content || "No response";
+
+res.json({ reply });
 
   } catch (err) {
     res.json({ reply: "Error contacting AI." });
@@ -40,6 +41,8 @@ app.post("/ask", async (req, res) => {
 
 });
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
-});
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
+})
