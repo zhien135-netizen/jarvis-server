@@ -90,14 +90,14 @@ function speak(text) {
 
   setOrbState("speaking");
 
-  // 🔥 ADD THIS
-  speech.onstart = () => {
-    recognition.stop();   // stop mic while speaking
-  };
+  // 🔴 STOP MIC while speaking
+  recognition.stop();
 
   speech.onend = () => {
     setOrbState("idle");
-    recognition.start();  // restart mic after speaking
+
+    // 🟢 Restart listening after speaking
+    startListening();
   };
 
   speechSynthesis.speak(speech);
@@ -126,21 +126,22 @@ recognition.interimResults = false;
 
 function startListening() {
   setOrbState("listening");
-  recognition.start();
+  try {
+    recognition.start();
+  } catch (e) {
+    console.log("Already started");
+  }
 }
 
 recognition.onresult = (event) => {
-  const transcript = event.results[0][0].transcript.toLowerCase().trim();
-
+  const transcript = event.results[0][0].transcript.toLowerCase();
   console.log("Heard:", transcript);
 
-  // 🔥 Wake word check
+  // 🔥 Wake word
   if (transcript.includes("hey jarvis")) {
 
-    setOrbState("listening");
     speak("Yes?");
 
-    // Remove wake word
     const command = transcript.replace("hey jarvis", "").trim();
 
     if (command) {
@@ -151,9 +152,12 @@ recognition.onresult = (event) => {
     console.log("Ignored (no wake word)");
   }
 };
-  
+
+// Restart only if not speaking
 recognition.onend = () => {
-  recognition.start();
+  if (!speechSynthesis.speaking) {
+    startListening();
+  }
 };
 
 async function askJarvis(question){
