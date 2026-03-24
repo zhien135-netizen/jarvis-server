@@ -71,7 +71,7 @@ button:hover {
   J.A.R.V.I.S. INTERFACE<br>
   Listening...<br>
   Awaiting command.
-</div><button onclick="testClick()">TEST</button>
+</div><button onclick="testAPI()">TEST API</button>
 
 <div>
   <button id="focusBtn">🎯 Focus</button>
@@ -221,6 +221,8 @@ function startBreathing() {
 }
 
   async function testAPI() {
+  alert("Starting test...");
+
   try {
     const res = await fetch("https://jarvis-server-0cga.onrender.com/ask", {
       method: "POST",
@@ -230,13 +232,14 @@ function startBreathing() {
       body: JSON.stringify({ message: "hello" })
     });
 
+    alert("Got response");
+
     const data = await res.json();
 
-    alert("Response: " + data.reply);
-    speak(data.reply);
+    alert("Reply: " + (data.reply || "no reply"));
 
   } catch (err) {
-    alert("ERROR: " + err);
+    alert("ERROR: " + err.message);
   }
   }
 
@@ -262,7 +265,11 @@ document.getElementById("emergencyBtn").onclick = () => {
 };
 
   window.onload = () => {
-  recognition.start();
+  try {
+    recognition.start();
+  } catch (e) {
+    console.log("Mic start error");
+  }
 };
 </script></body>
   </html>
