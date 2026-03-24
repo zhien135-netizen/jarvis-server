@@ -50,7 +50,7 @@ app.post("/ask", async (req, res) => {
         "X-Title": "Jarvis"
       },
       body: JSON.stringify({
-        model: "google/gemma-7b-it",
+        model: "meta-llama/llama-3-8b-instruct",
         messages: [
           {
             role: "system",
