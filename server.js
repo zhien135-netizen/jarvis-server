@@ -130,7 +130,7 @@ const reply = data?.choices?.[0]?.message?.content || "No response";
 
 res.json({
   reply,
-  debug: data
+  full: data
 });
 
   } catch (err) {
