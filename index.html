@@ -236,7 +236,7 @@ function startBreathing() {
 
     const data = await res.json();
 
-    alert("Reply: " + (data.reply || "no reply"));
+   alert(JSON.stringify(data, null, 2));
 
   } catch (err) {
     alert("ERROR: " + err.message);
