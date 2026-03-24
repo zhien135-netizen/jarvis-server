@@ -123,9 +123,12 @@ User memory: ${JSON.stringify(userMemory)}`
 
     const data = await response.json();
 
-    const reply = data?.choices?.[0]?.message?.content || "No response";
+// 🔍 DEBUG (VERY IMPORTANT)
+console.log("OpenAI response:", data);
 
-    res.json({ reply });
+const reply = data?.choices?.[0]?.message?.content || "No response";
+
+res.json({ reply });
 
   } catch (err) {
     console.error(err);
