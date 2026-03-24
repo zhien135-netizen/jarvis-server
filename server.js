@@ -50,7 +50,7 @@ app.post("/ask", async (req, res) => {
         "X-Title": "Jarvis"
       },
       body: JSON.stringify({
-        model: "openchat/openchat-3.5",
+        model: "google/gemma-7b-it",
         messages: [
           {
             role: "system",
