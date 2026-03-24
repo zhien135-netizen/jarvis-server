@@ -135,17 +135,16 @@ function startListening() {
 
 recognition.onresult = (event) => {
   const transcript = event.results[0][0].transcript.toLowerCase();
-  console.log("Heard:", transcript);
+console.log("Heard:", transcript);
 
-  // 🔥 Wake word
   if (transcript.includes("hey jarvis")) {
-
-    speak("Yes?");
 
     const command = transcript.replace("hey jarvis", "").trim();
 
     if (command) {
-      handleCommand(command);
+      handleCommand(command); // ✅ run command FIRST
+    } else {
+      speak("Yes?"); // only respond if no command
     }
 
   } else {
@@ -162,17 +161,25 @@ recognition.onend = () => {
 
 async function askJarvis(question){
 
-  const res = await fetch("https://jarvis-server-0cga.onrender.com/ask", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ message: question })
-  });
+  try {
+    const res = await fetch("https://jarvis-server-0cga.onrender.com/ask", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: question })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  speak(data.reply);
+    console.log(data);
+
+    speak(data.reply || "No response");
+
+  } catch (err) {
+    speak("Server not responding.");
+    console.error(err);
+  }
 
 }
 
