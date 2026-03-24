@@ -128,7 +128,10 @@ console.log("OpenAI response:", data);
 
 const reply = data?.choices?.[0]?.message?.content || "No response";
 
-res.json({ reply });
+res.json({
+  reply,
+  debug: data
+});
 
   } catch (err) {
     console.error(err);
