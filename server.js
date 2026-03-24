@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import express from "express";
 import cors from "cors";
 import fs from "fs";
@@ -8,6 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// 🔑 Use OpenRouter API key (still named the same)
 const API_KEY = process.env.OPENAI_API_KEY;
 
 // =========================
@@ -34,7 +34,7 @@ function saveMemory() {
 // 🌐 ROOT ROUTE
 // =========================
 app.get("/", (req, res) => {
-  res.send("JARVIS backend is running");
+  res.send("JARVIS backend is running (FREE MODE)");
 });
 
 // =========================
@@ -96,19 +96,21 @@ app.post("/ask", async (req, res) => {
   }
 
   // =========================
-  // 🤖 AI RESPONSE
+  // 🤖 AI RESPONSE (FREE)
   // =========================
   try {
     const userMemory = memory[currentUser] || {};
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${API_KEY}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://zhien135-netizen.github.io",
+        "X-Title": "Jarvis"
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "mistralai/mistral-7b-instruct",
         messages: [
           {
             role: "system",
@@ -123,15 +125,11 @@ User memory: ${JSON.stringify(userMemory)}`
 
     const data = await response.json();
 
-// 🔍 DEBUG (VERY IMPORTANT)
-console.log("OpenAI response:", data);
+    console.log("AI RESPONSE:", data); // 🔍 Debug
 
-const reply = data?.choices?.[0]?.message?.content || "No response";
+    const reply = data?.choices?.[0]?.message?.content || "No response";
 
-res.json({
-  reply,
-  full: data
-});
+    res.json({ reply });
 
   } catch (err) {
     console.error(err);
