@@ -125,18 +125,20 @@ User memory: ${JSON.stringify(userMemory)}`
 
     const data = await response.json();
 
-    console.log("AI RESPONSE:", data); // 🔍 Debug
+console.log("AI RESPONSE:", JSON.stringify(data, null, 2)); // 🔍 FULL DEBUG
 
-    const reply = data?.choices?.[0]?.message?.content || "No response";
+let reply = "No response";
 
-    res.json({ reply });
+if (data.error) {
+  console.log("AI ERROR:", data.error.message);
+  reply = "AI error: " + data.error.message;
+}
 
-  } catch (err) {
-    console.error(err);
-    res.json({ reply: "Error contacting AI." });
-  }
+else if (data.choices && data.choices.length > 0) {
+  reply = data.choices[0]?.message?.content || "Empty response";
+}
 
-});
+res.json({ reply });
 
 // =========================
 // 🚀 START SERVER
