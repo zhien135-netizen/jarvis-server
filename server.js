@@ -110,7 +110,7 @@ app.post("/ask", async (req, res) => {
         "X-Title": "Jarvis"
       },
       body: JSON.stringify({
-        model: "mistralai/mistral-7b-instruct",
+        model: "openchat/openchat-3.5",
         messages: [
           {
             role: "system",
