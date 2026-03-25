@@ -71,7 +71,8 @@ button:hover {
   J.A.R.V.I.S. INTERFACE<br>
   Listening...<br>
   Awaiting command.
-</div><button onclick="testAPI()">TEST API</button>
+<button onclick="startListening()">🎤 Talk</button>
+<button onclick="testAPI()">🧪 Test API</button>
 
 <div>
   <button id="focusBtn">🎯 Focus</button>
@@ -90,13 +91,15 @@ function speak(text) {
 
   setOrbState("speaking");
 
-  // 🔴 STOP MIC while speaking
-  recognition.stop();
+  // 🔴 Stop mic while speaking
+  try {
+    recognition.stop();
+  } catch (e) {}
 
   speech.onend = () => {
     setOrbState("idle");
 
-    // 🟢 Restart listening after speaking
+    // 🟢 Restart mic AFTER speaking
     startListening();
   };
 
@@ -125,26 +128,27 @@ recognition.continuous = true;
 recognition.interimResults = false;
 
 function startListening() {
-  setOrbState("listening");
   try {
     recognition.start();
+    setOrbState("listening");
   } catch (e) {
-    console.log("Already started");
+    // prevents crash if already running
   }
 }
 
 recognition.onresult = (event) => {
-  const transcript = event.results[0][0].transcript.toLowerCase();
-console.log("Heard:", transcript);
+  const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
+
+  console.log("Heard:", transcript);
 
   if (transcript.includes("hey jarvis")) {
 
     const command = transcript.replace("hey jarvis", "").trim();
 
     if (command) {
-      handleCommand(command); // ✅ run command FIRST
+      handleCommand(command);
     } else {
-      speak("Yes?"); // only respond if no command
+      speak("Yes?");
     }
 
   } else {
@@ -265,11 +269,7 @@ document.getElementById("emergencyBtn").onclick = () => {
 };
 
   window.onload = () => {
-  try {
-    recognition.start();
-  } catch (e) {
-    console.log("Mic start error");
-  }
+  startListening();
 };
 </script></body>
   </html>
