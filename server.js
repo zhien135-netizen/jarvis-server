@@ -54,7 +54,7 @@ app.post("/ask", async (req, res) => {
         messages: [
           {
             role: "system",
-            content: "You are JARVIS, a smart AI assistant."
+            content: "You are JARVIS, a smart AI assistant. Be confident, slightly witty, but still concise."
           },
           {
             role: "user",
