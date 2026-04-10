@@ -71,6 +71,8 @@ button:hover {
   J.A.R.V.I.S. INTERFACE<br>
   Listening...<br>
   Awaiting command.
+</div>
+
 <button onclick="startListening()">🎤 Talk</button>
 <button onclick="testAPI()">🧪 Test API</button>
 
@@ -122,46 +124,50 @@ function setOrbState(state) {
    SPEECH RECOGNITION
 ========================= */
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = new SpeechRecognition();
 
-recognition.continuous = true;
-recognition.interimResults = false;
+// 🛑 SAFETY CHECK HERE
+if (!SpeechRecognition) {
+  alert("Speech recognition not supported on this device");
+} else {
+  const recognition = new SpeechRecognition();
 
-function startListening() {
-  try {
-    recognition.start();
-    setOrbState("listening");
-  } catch (e) {
-    // prevents crash if already running
+  recognition.continuous = true;
+  recognition.interimResults = false;
+
+  // 👇 MOVE ALL recognition code INSIDE THIS BLOCK
+
+  function startListening() {
+    try {
+      recognition.start();
+      setOrbState("listening");
+    } catch (e) {}
+  }
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
+
+    console.log("Heard:", transcript);
+
+    if (transcript.includes("jarvis")) {
+      const command = transcript
+        .replace("hey jarvis", "")
+        .replace("jarvis", "")
+        .trim();
+
+      if (command) {
+        handleCommand(command);
+      } else {
+        speak("Yes?");
+      }
+    }
+  };
+
+  recognition.onend = () => {
+    if (!speechSynthesis.speaking) {
+      setTimeout(() => startListening(), 300);
+    }
   }
 }
-
-recognition.onresult = (event) => {
-  const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
-
-  console.log("Heard:", transcript);
-
-  if (transcript.includes("hey jarvis")) {
-
-    const command = transcript.replace("hey jarvis", "").trim();
-
-    if (command) {
-      handleCommand(command);
-    } else {
-      speak("Yes?");
-    }
-
-  } else {
-    console.log("Ignored (no wake word)");
-  }
-};
-
-// Restart only if not speaking
-recognition.onend = () => {
-  if (!speechSynthesis.speaking) {
-    startListening();
-  }
-};
 
 async function askJarvis(question){
 
