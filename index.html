@@ -85,6 +85,7 @@ button:hover {
    SPEECH SYNTHESIS
 ========================= */
 function speak(text) {
+  speechSynthesis.cancel();
   const speech = new SpeechSynthesisUtterance(text);
 
   speech.lang = "en-US";
